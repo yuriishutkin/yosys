@@ -1,0 +1,9 @@
+target_sources(yosys
+  PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/test_pmgen.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/ice40_dsp.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/ice40_wrapcarry.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/xilinx_dsp.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/peepopt.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/xilinx_srl.cc
+)

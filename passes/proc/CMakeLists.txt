@@ -1,0 +1,14 @@
+target_sources(yosys
+  PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/proc.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/proc_prune.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/proc_clean.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/proc_rmdead.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/proc_init.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/proc_arst.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/proc_rom.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/proc_mux.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/proc_dlatch.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/proc_dff.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/proc_memwr.cc
+)

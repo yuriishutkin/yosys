@@ -1,0 +1,16 @@
+target_sources(yosys
+  PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/memory.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/memory_dff.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/memory_share.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/memory_collect.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/memory_unpack.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/memory_bram.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/memory_map.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/memory_memx.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/memory_nordff.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/memory_narrow.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/memory_libmap.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/memory_bmux2rom.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/memlib.cc
+)
