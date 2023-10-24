@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
+from pathlib import Path
 import sys
 
 assert sys.version_info.major >= 3, "only Python >= 3 is supported"
-
-from pathlib import Path
 
 yosys_modules = [
     "backends/aiger",
@@ -63,7 +62,7 @@ def extract_srcs(contents):
         if not line.startswith("+="):
             continue
         src = Path(line.removeprefix("+=").strip())
-        if "verificsva" in src.name:
+        if "pmgen" in str(src) or "verificsva" in src.name:
             continue
         src_cc = src.with_suffix(".cc")
         if src_cc.exists():
