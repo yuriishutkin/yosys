@@ -2,12 +2,16 @@ cmake_minimum_required(VERSION 3.10)
 
 project(yosys)
 
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules/)
+
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-add_library(yosys STATIC)
-target_include_directories(yosys PUBLIC ${CMAKE_SOURCE_DIR})
+option(YOSYS_LINK_ABC "Whether to statically link to abc" OFF)
+
+add_library(yosys SHARED)
+target_include_directories(yosys PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(yosys PUBLIC _YOSYS_)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -65,7 +69,7 @@ endif()
 
 add_flex_bison_dependency(verilog_lexer verilog_parser)
 
-target_include_directories(yosys PUBLIC ${CMAKE_BINARY_DIR})
+target_include_directories(yosys PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 target_sources(yosys
   PRIVATE
@@ -75,10 +79,39 @@ target_sources(yosys
   ${FLEX_verilog_lexer_OUTPUTS}
 )
 
-add_executable(yosys_exe)
-set_property(TARGET yosys_exe PROPERTY OUTPUT_NAME yosys)
-target_sources(yosys_exe PRIVATE ${CMAKE_SOURCE_DIR}/kernel/driver.cc)
-target_link_libraries(yosys_exe PRIVATE yosys)
+find_package(Readline REQUIRED)
+target_link_libraries(yosys PUBLIC Readline::Readline)
+target_compile_definitions(yosys PUBLIC YOSYS_ENABLE_READLINE)
+
+find_package(TCL)
+if(NOT TCL_FOUND)
+  message(FATAL_ERROR "could NOT find TCL")
+endif()
+target_link_libraries(yosys PUBLIC ${TCL_LIBRARY})
+target_include_directories(yosys PUBLIC ${TCL_INCLUDE_PATH})
+target_compile_definitions(yosys PUBLIC YOSYS_ENABLE_TCL)
+
+if(NOT YOSYS_LINK_ABC AND NOT WIN32)
+  find_package(ABC)
+  target_compile_definitions(yosys PUBLIC ABCEXTERNAL="${ABC_EXECUTABLE}")
+endif()
+if(YOSYS_LINK_ABC OR WIN32 OR NOT ABC_FOUND)
+  include(cmake/CPM.cmake)
+  CPMAddPackage(
+    NAME abc
+    OPTIONS "ABC_NAMESPACE abc"
+    GIT_REPOSITORY "https://github.com/rikushoney/abc_cmake.git"
+    GIT_TAG "7ec838f8"
+  )
+  target_compile_options(abc PRIVATE -fPIC)
+  target_link_libraries(yosys PRIVATE abc)
+  target_compile_definitions(yosys PUBLIC YOSYS_LINK_ABC)
+endif()
+target_compile_definitions(yosys PUBLIC YOSYS_ENABLE_ABC)
+
+find_package(ZLIB REQUIRED)
+target_link_libraries(yosys PUBLIC ZLIB::ZLIB)
+target_compile_definitions(yosys PUBLIC YOSYS_ENABLE_ZLIB)
 
 add_subdirectory(backends)
 add_subdirectory(frontends)
@@ -86,3 +119,8 @@ add_subdirectory(kernel)
 add_subdirectory(libs)
 add_subdirectory(passes)
 add_subdirectory(techlibs)
+
+add_executable(yosys_exe)
+set_property(TARGET yosys_exe PROPERTY OUTPUT_NAME yosys)
+target_sources(yosys_exe PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/kernel/driver.cc)
+target_link_libraries(yosys_exe PRIVATE yosys)
