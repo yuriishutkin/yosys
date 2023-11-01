@@ -124,3 +124,55 @@ add_executable(yosys_exe)
 set_property(TARGET yosys_exe PROPERTY OUTPUT_NAME yosys)
 target_sources(yosys_exe PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/kernel/driver.cc)
 target_link_libraries(yosys_exe PRIVATE yosys)
+
+target_sources(yosys
+  PUBLIC
+  FILE_SET HEADERS
+  BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
+  FILES
+  kernel/binding.h
+  kernel/cellaigs.h
+  kernel/celledges.h
+  kernel/celltypes.h
+  kernel/consteval.h
+  kernel/constids.inc
+  kernel/cost.h
+  kernel/ff.h
+  kernel/ffinit.h
+  kernel/ffmerge.h
+  kernel/fmt.h
+  kernel/fstdata.h
+  kernel/hashlib.h
+  kernel/json.h
+  kernel/log.h
+  kernel/macc.h
+  kernel/modtools.h
+  kernel/mem.h
+  kernel/qcsat.h
+  kernel/register.h
+  kernel/rtlil.h
+  kernel/satgen.h
+  kernel/sigtools.h
+  kernel/timinginfo.h
+  kernel/utils.h
+  kernel/yosys.h
+  kernel/yw.h
+  libs/ezsat/ezsat.h
+  libs/ezsat/ezminisat.h
+  libs/fst/fstapi.h
+  libs/sha1/sha1.h
+  libs/json11/json11.hpp
+  passes/fsm/fsmdata.h
+  frontends/ast/ast.h
+  frontends/ast/ast_binding.h
+  frontends/blif/blifparse.h
+  backends/rtlil/rtlil_backend.h
+  backends/cxxrtl/cxxrtl.h
+  backends/cxxrtl/cxxrtl_vcd.h
+  backends/cxxrtl/cxxrtl_capi.cc
+  backends/cxxrtl/cxxrtl_capi.h
+  backends/cxxrtl/cxxrtl_vcd_capi.cc
+  backends/cxxrtl/cxxrtl_vcd_capi.h
+)
+
+install(TARGETS yosys yosys_exe FILE_SET HEADERS)
