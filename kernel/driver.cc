@@ -83,7 +83,6 @@ int getopt(int argc, char **argv, const char *optstring)
 }
 #endif
 
-
 USING_YOSYS_NAMESPACE
 
 #ifdef EMSCRIPTEN

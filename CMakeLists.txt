@@ -1,6 +1,18 @@
 cmake_minimum_required(VERSION 3.10)
 
+if(WIN32)
+  set(
+    CMAKE_TOOLCHAIN_FILE
+    "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    CACHE
+    STRING
+    "Vcpkg toolchain file"
+  )
+endif()
+
 project(yosys)
+
+include(${PROJECT_SOURCE_DIR}/cmake/CPM.cmake)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules/)
 
@@ -19,7 +31,41 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   # target_compile_options(yosys PUBLIC)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-  # target_compile_options(yosys PUBLIC)
+  target_compile_options(yosys PUBLIC /wd4244)
+  target_compile_definitions(yosys
+    PUBLIC UNICODE _CRT_SECURE_NO_WARNINGS
+    PRIVATE YOSYS_DLL_EXPORT
+  )
+  set_target_properties(yosys PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
+
+if(WIN32)
+  set(WFB_BUILD_DIR ${CMAKE_BINARY_DIR}/winflexbison)
+  CPMAddPackage(winflexbison
+    GIT_REPOSITORY "https://github.com/lexxmark/winflexbison.git"
+    GIT_TAG "300f48b"
+    DOWNLOAD_ONLY
+  )
+  execute_process(
+    COMMAND ${CMAKE_COMMAND}
+            -S ${winflexbison_SOURCE_DIR}
+            -G ${CMAKE_GENERATOR}
+            -DCMAKE_BUILD_TYPE=Release
+            -B ${WFB_BUILD_DIR}
+  )
+  execute_process(COMMAND ${CMAKE_COMMAND} --build ${WFB_BUILD_DIR} --config Release)
+  find_program(BISON_EXECUTABLE
+    NAMES win_bison
+    HINTS ${winflexbison_SOURCE_DIR}/bin/Release
+    DOC "path to the bison executable"
+    REQUIRED
+  )
+  find_program(FLEX_EXECUTABLE
+    NAMES win_flex
+    HINTS ${winflexbison_SOURCE_DIR}/bin/Release
+    DOC "path to the flex executable"
+    REQUIRED
+  )
 endif()
 
 find_package(BISON REQUIRED)
@@ -79,31 +125,39 @@ target_sources(yosys
   ${FLEX_verilog_lexer_OUTPUTS}
 )
 
-find_package(Readline REQUIRED)
-target_link_libraries(yosys PUBLIC Readline::Readline)
+if(WIN32)
+  find_package(unofficial-readline-win32 CONFIG REQUIRED)
+  target_link_libraries(yosys PUBLIC unofficial::readline-win32::readline)
+else()
+  find_package(Readline REQUIRED)
+  target_link_libraries(yosys PUBLIC Readline::Readline)
+endif()
 target_compile_definitions(yosys PUBLIC YOSYS_ENABLE_READLINE)
 
-find_package(TCL)
-if(NOT TCL_FOUND)
-  message(FATAL_ERROR "could NOT find TCL")
+if(NOT WIN32)
+  find_package(TCL)
+  if(NOT TCL_FOUND)
+    message(FATAL_ERROR "could NOT find TCL")
+  endif()
+  target_link_libraries(yosys PUBLIC ${TCL_LIBRARY})
+  target_include_directories(yosys PUBLIC ${TCL_INCLUDE_PATH})
+  target_compile_definitions(yosys PUBLIC YOSYS_ENABLE_TCL)
 endif()
-target_link_libraries(yosys PUBLIC ${TCL_LIBRARY})
-target_include_directories(yosys PUBLIC ${TCL_INCLUDE_PATH})
-target_compile_definitions(yosys PUBLIC YOSYS_ENABLE_TCL)
 
 if(NOT YOSYS_LINK_ABC AND NOT WIN32)
   find_package(ABC)
   target_compile_definitions(yosys PUBLIC ABCEXTERNAL="${ABC_EXECUTABLE}")
 endif()
 if(YOSYS_LINK_ABC OR WIN32 OR NOT ABC_FOUND)
-  include(cmake/CPM.cmake)
   CPMAddPackage(
     NAME abc
     OPTIONS "ABC_NAMESPACE abc"
     GIT_REPOSITORY "https://github.com/rikushoney/abc_cmake.git"
-    GIT_TAG "7ec838f8"
+    GIT_TAG "64258d84"
   )
-  target_compile_options(abc PRIVATE -fPIC)
+  if(NOT WIN32)
+    target_compile_options(abc PRIVATE -fPIC)
+  endif()
   target_link_libraries(yosys PRIVATE abc)
   target_compile_definitions(yosys PUBLIC YOSYS_LINK_ABC)
 endif()

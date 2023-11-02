@@ -78,8 +78,8 @@
 YOSYS_NAMESPACE_BEGIN
 
 int autoidx = 1;
-int yosys_xtrace = 0;
-RTLIL::Design *yosys_design = NULL;
+YOSYS_DLL_SPEC int yosys_xtrace = 0;
+YOSYS_DLL_SPEC RTLIL::Design *yosys_design = NULL;
 CellTypes yosys_celltypes;
 
 #ifdef YOSYS_ENABLE_TCL
@@ -351,7 +351,7 @@ std::string get_base_tmpdir()
 	char shortpath[MAX_PATH + 1];
 #  else
 	WCHAR longpath[MAX_PATH + 1];
-	TCHAR shortpath[MAX_PATH + 1];
+	WCHAR shortpath[MAX_PATH + 1];
 #  endif
 	if (!GetTempPath(MAX_PATH+1, longpath))
 		log_error("GetTempPath() failed.\n");
@@ -898,7 +898,7 @@ std::string proc_self_dirname()
 	char shortpath[MAX_PATH + 1];
 #  else
 	WCHAR longpath[MAX_PATH + 1];
-	TCHAR shortpath[MAX_PATH + 1];
+	WCHAR shortpath[MAX_PATH + 1];
 #  endif
 	if (!GetModuleFileName(0, longpath, MAX_PATH+1))
 		log_error("GetModuleFileName() failed.\n");

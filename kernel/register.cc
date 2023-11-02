@@ -93,7 +93,7 @@ Pass *first_queued_pass;
 Pass *current_pass;
 
 std::map<std::string, Frontend*> frontend_register;
-std::map<std::string, Pass*> pass_register;
+YOSYS_DLL_SPEC std::map<std::string, Pass*> pass_register;
 std::map<std::string, Backend*> backend_register;
 
 std::vector<std::string> Frontend::next_args;
