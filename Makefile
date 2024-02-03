@@ -141,7 +141,7 @@ LDLIBS += -lrt
 endif
 endif
 
-YOSYS_VER := 0.34+43
+YOSYS_VER := 0.37+64
 
 # Note: We arrange for .gitcommit to contain the (short) commit hash in
 # tarballs generated with git-archive(1) using .gitattributes. The git repo
@@ -157,7 +157,7 @@ endif
 OBJS = kernel/version_$(GIT_REV).o
 
 bumpversion:
-	sed -i "/^YOSYS_VER := / s/+[0-9][0-9]*$$/+`git log --oneline 4a1b559.. | wc -l`/;" Makefile
+	sed -i "/^YOSYS_VER := / s/+[0-9][0-9]*$$/+`git log --oneline a5c7f69.. | wc -l`/;" Makefile
 
 # set 'ABCREV = default' to use abc/ as it is
 #
@@ -321,11 +321,11 @@ AR = $(WASI_SDK)/bin/ar
 RANLIB = $(WASI_SDK)/bin/ranlib
 WASIFLAGS := --sysroot $(WASI_SDK)/share/wasi-sysroot $(WASIFLAGS)
 endif
-CXXFLAGS := $(WASIFLAGS) -std=$(CXXSTD) -Os $(filter-out -fPIC,$(CXXFLAGS))
+CXXFLAGS := $(WASIFLAGS) -std=$(CXXSTD) -Os -D_WASI_EMULATED_PROCESS_CLOCKS $(filter-out -fPIC,$(CXXFLAGS))
 LDFLAGS := $(WASIFLAGS) -Wl,-z,stack-size=1048576 $(filter-out -rdynamic,$(LDFLAGS))
-LDLIBS := $(filter-out -lrt,$(LDLIBS))
+LDLIBS := -lwasi-emulated-process-clocks $(filter-out -lrt,$(LDLIBS))
 ABCMKARGS += AR="$(AR)" RANLIB="$(RANLIB)"
-ABCMKARGS += ARCHFLAGS="$(WASIFLAGS) -DABC_USE_STDINT_H -DABC_NO_DYNAMIC_LINKING -DABC_NO_RLIMIT -Wno-c++11-narrowing"
+ABCMKARGS += ARCHFLAGS="$(WASIFLAGS) -D_WASI_EMULATED_PROCESS_CLOCKS -DABC_USE_STDINT_H -DABC_NO_DYNAMIC_LINKING -DABC_NO_RLIMIT -Wno-c++11-narrowing"
 ABCMKARGS += OPTFLAGS="-Os"
 EXE = .wasm
 
@@ -647,12 +647,12 @@ $(eval $(call add_include_file,frontends/ast/ast.h))
 $(eval $(call add_include_file,frontends/ast/ast_binding.h))
 $(eval $(call add_include_file,frontends/blif/blifparse.h))
 $(eval $(call add_include_file,backends/rtlil/rtlil_backend.h))
-$(eval $(call add_include_file,backends/cxxrtl/cxxrtl.h))
-$(eval $(call add_include_file,backends/cxxrtl/cxxrtl_vcd.h))
-$(eval $(call add_include_file,backends/cxxrtl/cxxrtl_capi.cc))
-$(eval $(call add_include_file,backends/cxxrtl/cxxrtl_capi.h))
-$(eval $(call add_include_file,backends/cxxrtl/cxxrtl_vcd_capi.cc))
-$(eval $(call add_include_file,backends/cxxrtl/cxxrtl_vcd_capi.h))
+$(eval $(call add_include_file,backends/cxxrtl/runtime/cxxrtl/cxxrtl.h))
+$(eval $(call add_include_file,backends/cxxrtl/runtime/cxxrtl/cxxrtl_vcd.h))
+$(eval $(call add_include_file,backends/cxxrtl/runtime/cxxrtl/capi/cxxrtl_capi.cc))
+$(eval $(call add_include_file,backends/cxxrtl/runtime/cxxrtl/capi/cxxrtl_capi.h))
+$(eval $(call add_include_file,backends/cxxrtl/runtime/cxxrtl/capi/cxxrtl_capi_vcd.cc))
+$(eval $(call add_include_file,backends/cxxrtl/runtime/cxxrtl/capi/cxxrtl_capi_vcd.h))
 
 OBJS += kernel/driver.o kernel/register.o kernel/rtlil.o kernel/log.o kernel/calc.o kernel/yosys.o
 OBJS += kernel/binding.o
@@ -679,11 +679,7 @@ OBJS += libs/bigint/BigUnsigned.o libs/bigint/BigUnsignedInABase.o
 
 OBJS += libs/sha1/sha1.o
 
-ifneq ($(SMALL),1)
-
 OBJS += libs/json11/json11.o
-
-OBJS += libs/subcircuit/subcircuit.o
 
 OBJS += libs/ezsat/ezsat.o
 OBJS += libs/ezsat/ezminisat.o
@@ -699,6 +695,10 @@ OBJS += libs/fst/fastlz.o
 OBJS += libs/fst/lz4.o
 endif
 
+ifneq ($(SMALL),1)
+
+OBJS += libs/subcircuit/subcircuit.o
+
 include $(YOSYS_SRC)/frontends/*/Makefile.inc
 include $(YOSYS_SRC)/passes/*/Makefile.inc
 include $(YOSYS_SRC)/backends/*/Makefile.inc
@@ -707,6 +707,9 @@ include $(YOSYS_SRC)/techlibs/*/Makefile.inc
 else
 
 include $(YOSYS_SRC)/frontends/verilog/Makefile.inc
+ifeq ($(ENABLE_VERIFIC),1)
+include $(YOSYS_SRC)/frontends/verific/Makefile.inc
+endif
 include $(YOSYS_SRC)/frontends/rtlil/Makefile.inc
 include $(YOSYS_SRC)/frontends/ast/Makefile.inc
 include $(YOSYS_SRC)/frontends/blif/Makefile.inc
@@ -880,13 +883,15 @@ endif
 	+cd tests/arch/gowin && bash run-test.sh $(SEEDOPT)
 	+cd tests/arch/intel_alm && bash run-test.sh $(SEEDOPT)
 	+cd tests/arch/nexus && bash run-test.sh $(SEEDOPT)
-	+cd tests/arch/quicklogic && bash run-test.sh $(SEEDOPT)
+	+cd tests/arch/quicklogic/pp3 && bash run-test.sh $(SEEDOPT)
+	+cd tests/arch/quicklogic/qlf_k6n10f && bash run-test.sh $(SEEDOPT)
 	+cd tests/arch/gatemate && bash run-test.sh $(SEEDOPT)
 	+cd tests/rpc && bash run-test.sh
 	+cd tests/memfile && bash run-test.sh
 	+cd tests/verilog && bash run-test.sh
 	+cd tests/xprop && bash run-test.sh $(SEEDOPT)
 	+cd tests/fmt && bash run-test.sh
+	+cd tests/cxxrtl && bash run-test.sh
 	@echo ""
 	@echo "  Passed \"make test\"."
 	@echo ""

@@ -115,7 +115,9 @@ void msg_func(msg_type_t msg_type, const char *message_id, linefile_type linefil
 
 	if (log_verific_callback) {
 		string full_message = stringf("%s%s\n", message_prefix.c_str(), message.c_str());
-		log_verific_callback(int(msg_type), message_id, LineFile::GetFileName(linefile), LineFile::GetLineNo(linefile), full_message.c_str());
+		log_verific_callback(int(msg_type), message_id, LineFile::GetFileName(linefile), 
+			linefile ? linefile->GetLeftLine() : 0, linefile ? linefile->GetLeftCol() : 0, 
+			linefile ? linefile->GetRightLine() : 0, linefile ? linefile->GetRightCol() : 0, full_message.c_str());
 	} else {
 		if (msg_type == VERIFIC_ERROR || msg_type == VERIFIC_WARNING || msg_type == VERIFIC_PROGRAM_ERROR)
 			log_warning_noprefix("%s%s\n", message_prefix.c_str(), message.c_str());
@@ -126,7 +128,7 @@ void msg_func(msg_type_t msg_type, const char *message_id, linefile_type linefil
 		verific_error_msg = message;
 }
 
-void set_verific_logging(void (*cb)(int msg_type, const char *message_id, const char* file_path, unsigned int line_no, const char *msg))
+void set_verific_logging(void (*cb)(int msg_type, const char *message_id, const char* file_path, unsigned int left_line, unsigned int left_col, unsigned int right_line, unsigned int right_col, const char *msg))
 {
 	Message::SetConsoleOutput(0);
 	Message::RegisterCallBackMsg(msg_func);
@@ -262,6 +264,9 @@ static const std::string verific_unescape(const char *value)
 
 void VerificImporter::import_attributes(dict<RTLIL::IdString, RTLIL::Const> &attributes, DesignObj *obj, Netlist *nl)
 {
+	if (!obj)
+		return;
+
 	MapIter mi;
 	Att *attr;
 
@@ -1345,7 +1350,12 @@ void VerificImporter::import_netlist(RTLIL::Design *design, Netlist *nl, std::ma
 		wire->start_offset = min(portbus->LeftIndex(), portbus->RightIndex());
 		wire->upto = portbus->IsUp();
 		import_attributes(wire->attributes, portbus, nl);
-
+		SetIter si ;
+		Port *port ;
+		FOREACH_PORT_OF_PORTBUS(portbus, si, port) {
+			import_attributes(wire->attributes, port->GetNet(), nl);
+			break;
+		}
 		bool portbus_input = portbus->GetDir() == DIR_INOUT || portbus->GetDir() == DIR_IN;
 		if (portbus_input)
 			wire->port_input = true;
@@ -2100,7 +2110,7 @@ VerificClocking::VerificClocking(VerificImporter *importer, Net *net, bool sva_a
 	if (sva_at_only)
 	do {
 		Instance *inst_mux = net->Driver();
-		if (inst_mux->Type() != PRIM_MUX)
+		if (inst_mux == nullptr || inst_mux->Type() != PRIM_MUX)
 			break;
 
 		bool pwr1 = inst_mux->GetInput1()->IsPwr();
@@ -2804,6 +2814,9 @@ struct VerificPass : public Pass {
 		log("\n");
 		log("  -extnets\n");
 		log("    Resolve references to external nets by adding module ports as needed.\n");
+		log("\n");
+		log("  -no-split-complex-ports\n");
+		log("    Complex ports (structs or arrays) are not split and remain packed as a single port.\n");
 		log("\n");
 		log("  -autocover\n");
 		log("    Generate automatic cover statements for all asserts\n");
@@ -3538,6 +3551,7 @@ struct VerificPass : public Pass {
 			bool mode_nosva = false, mode_names = false, mode_verific = false;
 			bool mode_autocover = false, mode_fullinit = false;
 			bool flatten = false, extnets = false, mode_cells = false;
+			bool split_complex_ports = true;
 			string dumpfile;
 			string ppfile;
 			Map parameters(STRING_HASH);
@@ -3553,6 +3567,10 @@ struct VerificPass : public Pass {
 				}
 				if (args[argidx] == "-flatten") {
 					flatten = true;
+					continue;
+				}
+				if (args[argidx] == "-no-split-complex-ports") {
+					split_complex_ports = false;
 					continue;
 				}
 				if (args[argidx] == "-extnets") {
@@ -3794,8 +3812,10 @@ struct VerificPass : public Pass {
 					worker.run(nl.second);
 			}
 
-			for (auto nl : nl_todo)
-				nl.second->ChangePortBusStructures(1 /* hierarchical */);
+			if (split_complex_ports) {
+				for (auto nl : nl_todo)
+					nl.second->ChangePortBusStructures(1 /* hierarchical */);
+			}
 
 			if (!dumpfile.empty()) {
 				VeriWrite veri_writer;
