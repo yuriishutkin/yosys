@@ -221,12 +221,12 @@ target_sources(yosys
   frontends/ast/ast_binding.h
   frontends/blif/blifparse.h
   backends/rtlil/rtlil_backend.h
-  backends/cxxrtl/cxxrtl.h
-  backends/cxxrtl/cxxrtl_vcd.h
-  backends/cxxrtl/cxxrtl_capi.cc
-  backends/cxxrtl/cxxrtl_capi.h
-  backends/cxxrtl/cxxrtl_vcd_capi.cc
-  backends/cxxrtl/cxxrtl_vcd_capi.h
+  backends/cxxrtl/runtime/cxxrtl/cxxrtl.h
+  backends/cxxrtl/runtime/cxxrtl/cxxrtl_vcd.h
+  backends/cxxrtl/runtime/cxxrtl/capi/cxxrtl_capi.cc
+  backends/cxxrtl/runtime/cxxrtl/capi/cxxrtl_capi.h
+  backends/cxxrtl/runtime/cxxrtl/capi/cxxrtl_capi_vcd.cc
+  backends/cxxrtl/runtime/cxxrtl/capi/cxxrtl_capi_vcd.h
 )
 
 install(TARGETS yosys yosys_exe FILE_SET HEADERS)
