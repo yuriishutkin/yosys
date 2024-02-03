@@ -1,3 +1,4 @@
+if(SMALL)
 target_sources(yosys
   PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/opt.cc
@@ -12,13 +13,8 @@ target_sources(yosys
   ${CMAKE_CURRENT_SOURCE_DIR}/opt_share.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/opt_clean.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/opt_expr.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/share.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/wreduce.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/opt_demorgan.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/rmports.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/opt_lut.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/opt_lut_ins.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/opt_ffinv.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/pmux2shiftx.cc
-  ${CMAKE_CURRENT_SOURCE_DIR}/muxpack.cc
 )
+else()
+  file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cc)
+  target_sources(yosys PRIVATE ${SOURCES})
+endif()
