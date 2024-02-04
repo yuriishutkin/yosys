@@ -21,9 +21,15 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 option(YOSYS_LINK_ABC "Whether to statically link to abc" OFF)
-option(SMALL "Build small package" 1)
+option(SMALL "Build small package" ON)
+option(STATIC_LIB "Build static lib" OFF)
 
+if(STATIC_LIB)
+add_library(yosys)
+else()
 add_library(yosys SHARED)
+endif()
+
 target_include_directories(yosys PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(yosys PUBLIC _YOSYS_)
 
@@ -32,7 +38,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   # target_compile_options(yosys PUBLIC)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-  target_compile_options(yosys PUBLIC /wd4244)
+  target_compile_options(yosys PUBLIC /wd4244 /wd4267)
   target_compile_definitions(yosys
     PUBLIC UNICODE _CRT_SECURE_NO_WARNINGS
     PRIVATE YOSYS_DLL_EXPORT
