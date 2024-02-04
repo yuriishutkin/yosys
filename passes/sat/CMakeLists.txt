@@ -1,0 +1,21 @@
+target_sources(yosys
+  PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/sat.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/freduce.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/eval.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/sim.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/miter.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/expose.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/assertpmux.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/clk2fflogic.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/async2sync.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/formalff.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/supercover.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/fmcombine.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/mutate.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/cutpoint.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/fminit.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/recover_names.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/qbfsat.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/synthprop.cc
+)

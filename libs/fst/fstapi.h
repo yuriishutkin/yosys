@@ -35,7 +35,6 @@ extern "C" {
 #include <ctype.h>
 #include <inttypes.h>
 #if defined(_MSC_VER)
-#include "libs/zlib/zlib.h"
 #include <io.h>
 
 #include <process.h>
@@ -55,10 +54,10 @@ extern "C" {
 
 #include "stdint.h"
 #else
-#include <zlib.h>
 #include <unistd.h>
 #endif
 #include <time.h>
+#include <zlib.h>
 
 #define FST_RDLOAD "FSTLOAD | "
 

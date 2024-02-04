@@ -166,6 +166,16 @@ extern Tcl_Obj *Tcl_ObjSetVar2(Tcl_Interp *interp, Tcl_Obj *part1Ptr, Tcl_Obj *p
 #  define YS_FALLTHROUGH
 #endif
 
+#ifdef _MSC_VER
+#ifdef YOSYS_DLL_EXPORT
+#define YOSYS_DLL_SPEC __declspec(dllexport)
+#else
+#define YOSYS_DLL_SPEC __declspec(dllimport)
+#endif
+#else
+#define YOSYS_DLL_SPEC
+#endif
+
 YOSYS_NAMESPACE_BEGIN
 
 // Note: All headers included in hashlib.h must be included
@@ -349,7 +359,7 @@ template<typename T> int GetSize(const T &obj) { return obj.size(); }
 inline int GetSize(RTLIL::Wire *wire);
 
 extern int autoidx;
-extern int yosys_xtrace;
+extern YOSYS_DLL_SPEC int yosys_xtrace;
 
 YOSYS_NAMESPACE_END
 
@@ -379,7 +389,7 @@ void yosys_shutdown();
 Tcl_Interp *yosys_get_tcl_interp();
 #endif
 
-extern RTLIL::Design *yosys_design;
+extern YOSYS_DLL_SPEC RTLIL::Design *yosys_design;
 
 RTLIL::IdString new_id(std::string file, int line, std::string func);
 RTLIL::IdString new_id_suffix(std::string file, int line, std::string func, std::string suffix);
@@ -415,14 +425,14 @@ void run_backend(std::string filename, std::string command, RTLIL::Design *desig
 void shell(RTLIL::Design *design);
 
 // journal of all input and output files read (for "yosys -E")
-extern std::set<std::string> yosys_input_files, yosys_output_files;
+extern YOSYS_DLL_SPEC std::set<std::string> yosys_input_files, yosys_output_files;
 
 // from kernel/version_*.o (cc source generated from Makefile)
-extern const char *yosys_version_str;
+extern YOSYS_DLL_SPEC const char *yosys_version_str;
 
 // from passes/cmds/design.cc
-extern std::map<std::string, RTLIL::Design*> saved_designs;
-extern std::vector<RTLIL::Design*> pushed_designs;
+extern YOSYS_DLL_SPEC std::map<std::string, RTLIL::Design*> saved_designs;
+extern YOSYS_DLL_SPEC std::vector<RTLIL::Design*> pushed_designs;
 
 // from passes/cmds/pluginc.cc
 extern std::map<std::string, void*> loaded_plugins;

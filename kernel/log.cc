@@ -38,31 +38,31 @@
 
 YOSYS_NAMESPACE_BEGIN
 
-std::vector<FILE*> log_files;
+YOSYS_DLL_SPEC std::vector<FILE*> log_files;
 std::vector<std::ostream*> log_streams;
 std::vector<std::string> log_scratchpads;
-std::map<std::string, std::set<std::string>> log_hdump;
-std::vector<std::regex> log_warn_regexes, log_nowarn_regexes, log_werror_regexes;
-dict<std::string, LogExpectedItem> log_expect_log, log_expect_warning, log_expect_error;
-std::set<std::string> log_warnings, log_experimentals, log_experimentals_ignored;
-int log_warnings_count = 0;
-int log_warnings_count_noexpect = 0;
-bool log_expect_no_warnings = false;
-bool log_hdump_all = false;
-FILE *log_errfile = NULL;
-SHA1 *log_hasher = NULL;
+YOSYS_DLL_SPEC std::map<std::string, std::set<std::string>> log_hdump;
+YOSYS_DLL_SPEC std::vector<std::regex> log_warn_regexes, log_nowarn_regexes, log_werror_regexes;
+YOSYS_DLL_SPEC dict<std::string, LogExpectedItem> log_expect_log, log_expect_warning, log_expect_error;
+YOSYS_DLL_SPEC std::set<std::string> log_warnings, log_experimentals, log_experimentals_ignored;
+YOSYS_DLL_SPEC int log_warnings_count = 0;
+YOSYS_DLL_SPEC int log_warnings_count_noexpect = 0;
+YOSYS_DLL_SPEC bool log_expect_no_warnings = false;
+YOSYS_DLL_SPEC bool log_hdump_all = false;
+YOSYS_DLL_SPEC FILE *log_errfile = NULL;
+YOSYS_DLL_SPEC SHA1 *log_hasher = NULL;
 
-bool log_time = false;
-bool log_error_stderr = false;
+YOSYS_DLL_SPEC bool log_time = false;
+YOSYS_DLL_SPEC bool log_error_stderr = false;
 bool log_cmd_error_throw = false;
 bool log_quiet_warnings = false;
-int log_verbose_level;
+YOSYS_DLL_SPEC int log_verbose_level;
 string log_last_error;
 void (*log_error_atexit)() = NULL;
 void (*log_verific_callback)(int msg_type, const char *message_id, const char* file_path, unsigned int left_line, unsigned int left_col, unsigned int right_line, unsigned int right_col, const char *msg) = NULL;
 
 int log_make_debug = 0;
-int log_force_debug = 0;
+YOSYS_DLL_SPEC int log_force_debug = 0;
 int log_debug_suppressed = 0;
 
 vector<int> header_count;

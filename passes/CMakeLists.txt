@@ -1,0 +1,10 @@
+
+if(SMALL)
+add_subdirectory(cmds)
+add_subdirectory(hierarchy)
+add_subdirectory(opt)
+add_subdirectory(proc)
+add_subdirectory(techmap)
+else()
+include_all_subdirs()
+endif()

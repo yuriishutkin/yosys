@@ -129,7 +129,7 @@ extern void handle_extra_select_args(Pass *pass, const std::vector<std::string> 
 extern RTLIL::Selection eval_select_args(const vector<string> &args, RTLIL::Design *design);
 extern void eval_select_op(vector<RTLIL::Selection> &work, const string &op, RTLIL::Design *design);
 
-extern std::map<std::string, Pass*> pass_register;
+extern YOSYS_DLL_SPEC std::map<std::string, Pass*> pass_register;
 extern std::map<std::string, Frontend*> frontend_register;
 extern std::map<std::string, Backend*> backend_register;
 

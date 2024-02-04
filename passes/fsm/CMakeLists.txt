@@ -1,0 +1,12 @@
+target_sources(yosys
+  PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/fsm.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/fsm_detect.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/fsm_extract.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/fsm_opt.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/fsm_expand.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/fsm_recode.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/fsm_info.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/fsm_export.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/fsm_map.cc
+)

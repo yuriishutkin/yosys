@@ -1,0 +1,14 @@
+target_sources(yosys
+  PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/equiv_make.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/equiv_miter.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/equiv_simple.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/equiv_status.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/equiv_add.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/equiv_remove.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/equiv_induct.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/equiv_struct.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/equiv_purge.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/equiv_mark.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/equiv_opt.cc
+)

@@ -94,29 +94,29 @@ YOSYS_NAMESPACE_BEGIN
 
 struct log_cmd_error_exception { };
 
-extern std::vector<FILE*> log_files;
+extern YOSYS_DLL_SPEC std::vector<FILE*> log_files;
 extern std::vector<std::ostream*> log_streams;
 extern std::vector<std::string> log_scratchpads;
-extern std::map<std::string, std::set<std::string>> log_hdump;
-extern std::vector<std::regex> log_warn_regexes, log_nowarn_regexes, log_werror_regexes;
-extern std::set<std::string> log_warnings, log_experimentals, log_experimentals_ignored;
-extern int log_warnings_count;
-extern int log_warnings_count_noexpect;
-extern bool log_expect_no_warnings;
-extern bool log_hdump_all;
-extern FILE *log_errfile;
-extern SHA1 *log_hasher;
+extern YOSYS_DLL_SPEC std::map<std::string, std::set<std::string>> log_hdump;
+extern YOSYS_DLL_SPEC std::vector<std::regex> log_warn_regexes, log_nowarn_regexes, log_werror_regexes;
+extern YOSYS_DLL_SPEC std::set<std::string> log_warnings, log_experimentals, log_experimentals_ignored;
+extern YOSYS_DLL_SPEC int log_warnings_count;
+extern YOSYS_DLL_SPEC int log_warnings_count_noexpect;
+extern YOSYS_DLL_SPEC bool log_expect_no_warnings;
+extern YOSYS_DLL_SPEC bool log_hdump_all;
+extern YOSYS_DLL_SPEC FILE *log_errfile;
+extern YOSYS_DLL_SPEC SHA1 *log_hasher;
 
-extern bool log_time;
-extern bool log_error_stderr;
+extern YOSYS_DLL_SPEC bool log_time;
+extern YOSYS_DLL_SPEC bool log_error_stderr;
 extern bool log_cmd_error_throw;
-extern bool log_quiet_warnings;
-extern int log_verbose_level;
+extern YOSYS_DLL_SPEC bool log_quiet_warnings;
+extern YOSYS_DLL_SPEC int log_verbose_level;
 extern string log_last_error;
-extern void (*log_error_atexit)();
+extern YOSYS_DLL_SPEC void (*log_error_atexit)();
 
 extern int log_make_debug;
-extern int log_force_debug;
+extern YOSYS_DLL_SPEC int log_force_debug;
 extern int log_debug_suppressed;
 
 void logv(const char *format, va_list ap);
@@ -200,7 +200,7 @@ struct LogExpectedItem
 	int current_count;
 };
 
-extern dict<std::string, LogExpectedItem> log_expect_log, log_expect_warning, log_expect_error;
+extern YOSYS_DLL_SPEC dict<std::string, LogExpectedItem> log_expect_log, log_expect_warning, log_expect_error;
 void log_check_expected();
 
 const char *log_signal(const RTLIL::SigSpec &sig, bool autoint = true);

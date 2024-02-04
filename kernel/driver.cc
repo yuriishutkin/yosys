@@ -97,6 +97,8 @@ int getopt(int argc, char **argv, const char *optstring)
 	return optopt;
 }
 
+USING_YOSYS_NAMESPACE
+
 #ifdef EMSCRIPTEN
 #  include <sys/stat.h>
 #  include <sys/types.h>
