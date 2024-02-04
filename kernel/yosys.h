@@ -401,7 +401,7 @@ RTLIL::IdString new_id_suffix(std::string file, int line, std::string func, std:
         static const YOSYS_NAMESPACE_PREFIX RTLIL::IdString id(q); return id; })()
 namespace ID = RTLIL::ID;
 
-RTLIL::Design *yosys_get_design();
+YOSYS_DLL_SPEC RTLIL::Design *yosys_get_design();
 std::string proc_self_dirname();
 std::string proc_share_dirname();
 std::string proc_program_prefix();
