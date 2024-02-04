@@ -30,7 +30,7 @@ def print_current_cell(f):
 if (len(sys.argv) > 2):
 	f = open(sys.argv[2], "w")
 else:
-	f = stdout
+	f = sys.stdout
 
 for line in fileinput.input(sys.argv[1]):
     if line.startswith("//-"):
