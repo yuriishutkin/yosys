@@ -28,8 +28,8 @@
 
 USING_YOSYS_NAMESPACE
 using namespace RTLIL_EXPORTER;
-YOSYS_NAMESPACE_BEGIN
 
+YOSYS_NAMESPACE_BEGIN
 
 namespace RTLIL_EXPORTER
 {
@@ -40,14 +40,31 @@ export_parameter_val_cb export_parameter_val_cb_f;
 export_wire_cb export_wire_cb_f;
 export_memory_cb export_memory_cb_f;
 export_cell_cb export_cell_cb_f;
+export_cell_cb export_cell_expr_cb_f;
+export_cell_expr_ff_cb export_cell_expr_ff_cb_f;
 export_proc_cb export_proc_cb_f;
 export_conn_cb export_conn_cb_f;
 export_module_cb export_module_start_cb_f;
 export_module_cb export_module_end_cb_f;
 export_design_cb export_design_cb_f;
 
-std::string module_name(const RTLIL::Module *module) { return module->name.str(); }
-std::string idString_str(const RTLIL::IdString& idString) { return idString.str(); }
+std::string idString_str(const RTLIL::IdString &idString) { return idString.str(); }
+int const_as_int(const RTLIL::Const &c) { return c.as_int(); }
+int sigspec_as_int(const RTLIL::SigSpec &sigspec) { return sigspec.as_int(); }
+int sigchunk_as_int(const RTLIL::SigChunk &sigchunk) { return RTLIL::Const(sigchunk.data).as_int(); }
+bool sigspec_is_wire(const RTLIL::SigSpec &sigspec) { return sigspec.is_wire(); }
+const RTLIL::Wire* sigspec_as_wire(const RTLIL::SigSpec &sigspec) { return sigspec.as_wire(); }
+const std::vector<RTLIL::SigChunk> &sigspec_chunks(const RTLIL::SigSpec &sigspec) { return sigspec.chunks(); }
+const RTLIL::SigSpec &cell_port(const RTLIL::Cell *cell, const std::string &port) { return cell->getPort("\\" + port); }
+const RTLIL::SigSpec &cell_out_port(const RTLIL::Cell *cell) { return cell->getPort(ID::Y); }
+std::string item_source(const RTLIL::AttrObject *item) {
+	for (auto attr = item->attributes.begin(); attr != item->attributes.end(); ++attr) {
+		if (attr->first.str() == "\\src") {
+			return attr->second.decode_string();
+		}
+	}
+	return "";
+}
 
 void export_module(RTLIL::Module *module, RTLIL::Design *design)
 {
@@ -70,17 +87,37 @@ void export_module(RTLIL::Module *module, RTLIL::Design *design)
 		}
 	}
 
-	for (auto it : module->wires())
+	for (auto it : module->wires()) {
 		export_wire_cb_f(module, it);
+	}
 
-	for (auto it : module->memories)
+	for (auto it : module->memories) {
 		export_memory_cb_f(module, it.second);
+	}
 
-	for (auto it : module->cells())
-		export_cell_cb_f(module, it);
+	for (auto cell : module->cells()) {
+		if (cell->is_mem_cell())
+			continue;
 
-	for (auto it : module->processes)
+		for (auto attr = cell->attributes.begin(); attr != cell->attributes.end(); ++attr) {
+			export_attribute_cb_f(cell, *attr);
+		}
+
+		if (cell->type[0] == '$') {
+			if (RTLIL::builtin_ff_cell_types().count(cell->type)) {
+				FfData ff(nullptr, cell);
+				export_cell_expr_ff_cb_f(module, cell, ff);
+			} else {
+				export_cell_expr_cb_f(module, cell);
+			}
+		} else {
+			export_cell_cb_f(module, cell);
+		}
+	}
+
+	for (auto it : module->processes) {
 		export_proc_cb_f(module, it.second);
+	}
 
 	for (auto it = module->connections().begin(); it != module->connections().end(); ++it) {
 		export_conn_cb_f(module, it->first, it->second);
