@@ -165,7 +165,7 @@ struct hash_ptr_ops {
 		return a == b;
 	}
 	static inline unsigned int hash(const void *a) {
-		return (uintptr_t)a;
+		return (unsigned int)(uintptr_t)a;
 	}
 };
 
