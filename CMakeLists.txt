@@ -1,15 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
 
-if(WIN32)
-  set(
-    CMAKE_TOOLCHAIN_FILE
-    "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake"
-    CACHE
-    STRING
-    "Vcpkg toolchain file"
-  )
-endif()
-
 project(yosys)
 
 include(${PROJECT_SOURCE_DIR}/cmake/CPM.cmake)
@@ -132,14 +122,11 @@ target_sources(yosys
   ${FLEX_verilog_lexer_OUTPUTS}
 )
 
-if(WIN32)
-  find_package(unofficial-readline-win32 CONFIG REQUIRED)
-  target_link_libraries(yosys PUBLIC unofficial::readline-win32::readline)
-else()
-  find_package(Readline REQUIRED)
+find_package(Readline)
+if(Readline_FOUND)
   target_link_libraries(yosys PUBLIC Readline::Readline)
+  target_compile_definitions(yosys PUBLIC YOSYS_ENABLE_READLINE)
 endif()
-target_compile_definitions(yosys PUBLIC YOSYS_ENABLE_READLINE)
 
 if(NOT WIN32)
   find_package(TCL)
@@ -172,9 +159,24 @@ endif()
 target_compile_definitions(yosys PUBLIC YOSYS_ENABLE_ABC)
 endif()
 
-find_package(ZLIB REQUIRED)
-target_link_libraries(yosys PUBLIC ZLIB::ZLIB)
-target_compile_definitions(yosys PUBLIC YOSYS_ENABLE_ZLIB)
+find_package(ZLIB)
+if(ZLIB_FOUND)
+  target_link_libraries(yosys PUBLIC ZLIB::ZLIB)
+  target_compile_definitions(yosys PUBLIC YOSYS_ENABLE_ZLIB)
+else()
+  CPMAddPackage(
+    NAME zlib
+    GIT_REPOSITORY "https://github.com/madler/zlib.git"
+    GIT_TAG "v1.3.1"
+  )
+
+  if(zlib_ADDED)
+	message(STATUS "zlib package added: ${zlib_SOURCE_DIR}")
+    target_link_libraries(yosys PUBLIC zlib)
+    target_include_directories(yosys PUBLIC ${zlib_SOURCE_DIR})
+    target_compile_definitions(yosys PUBLIC YOSYS_ENABLE_ZLIB)
+  endif()
+endif()
 
 function(include_all_subdirs)
 	# Add subdirectories containing CMakeLists.txt files
