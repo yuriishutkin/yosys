@@ -81,6 +81,8 @@ endif()
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/frontends/rtlil)
+
 bison_target(rtlil_parser
   ${PROJECT_SOURCE_DIR}/frontends/rtlil/rtlil_parser.y
   ${CMAKE_BINARY_DIR}/frontends/rtlil/rtlil_parser.tab.cc
@@ -102,6 +104,8 @@ if(NOT DEFINED FLEX_rtlil_lexer_DEFINED)
 endif()
 
 add_flex_bison_dependency(rtlil_lexer rtlil_parser)
+
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/frontends/verilog)
 
 bison_target(verilog_parser
   ${PROJECT_SOURCE_DIR}/frontends/verilog/verilog_parser.y
