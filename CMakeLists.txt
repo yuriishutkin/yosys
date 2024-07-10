@@ -38,19 +38,32 @@ endif()
 
 if(WIN32)
   set(WFB_BUILD_DIR ${CMAKE_BINARY_DIR}/winflexbison)
-  CPMAddPackage(winflexbison
+  CPMAddPackage(
+	NAME winflexbison
     GIT_REPOSITORY "https://github.com/lexxmark/winflexbison.git"
     GIT_TAG "300f48b"
     DOWNLOAD_ONLY
   )
+  
+  message(STATUS "Configuring winflexbison")
+  
   execute_process(
     COMMAND ${CMAKE_COMMAND}
             -S ${winflexbison_SOURCE_DIR}
             -G ${CMAKE_GENERATOR}
             -DCMAKE_BUILD_TYPE=Release
             -B ${WFB_BUILD_DIR}
+    OUTPUT_FILE wfb_cmake.out
+    ERROR_FILE wfb_cmake.err
   )
-  execute_process(COMMAND ${CMAKE_COMMAND} --build ${WFB_BUILD_DIR} --config Release)
+  
+  message(STATUS "Building winflexbison")
+  
+  execute_process(
+    COMMAND ${CMAKE_COMMAND} --build ${WFB_BUILD_DIR} --config Release
+    OUTPUT_FILE wfb_build.out
+    ERROR_FILE wfb_build.err
+  )
   find_program(BISON_EXECUTABLE
     NAMES win_bison
     HINTS ${winflexbison_SOURCE_DIR}/bin/Release
@@ -69,7 +82,7 @@ find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 
 bison_target(rtlil_parser
-  ${CMAKE_SOURCE_DIR}/frontends/rtlil/rtlil_parser.y
+  ${PROJECT_SOURCE_DIR}/frontends/rtlil/rtlil_parser.y
   ${CMAKE_BINARY_DIR}/frontends/rtlil/rtlil_parser.tab.cc
   DEFINES_FILE ${CMAKE_BINARY_DIR}/frontends/rtlil/rtlil_parser.tab.hh
 )
@@ -79,7 +92,7 @@ if(NOT DEFINED BISON_rtlil_parser_DEFINED)
 endif()
 
 flex_target(rtlil_lexer
-  ${CMAKE_SOURCE_DIR}/frontends/rtlil/rtlil_lexer.l
+  ${PROJECT_SOURCE_DIR}/frontends/rtlil/rtlil_lexer.l
   ${CMAKE_BINARY_DIR}/frontends/rtlil/rtlil_lexer.cc
   DEFINES_FILE ${CMAKE_BINARY_DIR}/frontends/rtlil/rtlil_lexer.hh
 )
@@ -91,7 +104,7 @@ endif()
 add_flex_bison_dependency(rtlil_lexer rtlil_parser)
 
 bison_target(verilog_parser
-  ${CMAKE_SOURCE_DIR}/frontends/verilog/verilog_parser.y
+  ${PROJECT_SOURCE_DIR}/frontends/verilog/verilog_parser.y
   ${CMAKE_BINARY_DIR}/frontends/verilog/verilog_parser.tab.cc
   DEFINES_FILE ${CMAKE_BINARY_DIR}/frontends/verilog/verilog_parser.tab.hh
 )
@@ -101,7 +114,7 @@ if(NOT DEFINED BISON_verilog_parser_DEFINED)
 endif()
 
 flex_target(verilog_lexer
-  ${CMAKE_SOURCE_DIR}/frontends/verilog/verilog_lexer.l
+  ${PROJECT_SOURCE_DIR}/frontends/verilog/verilog_lexer.l
   ${CMAKE_BINARY_DIR}/frontends/verilog/verilog_lexer.cc
   DEFINES_FILE ${CMAKE_BINARY_DIR}/frontends/verilog/verilog_lexer.hh
 )
@@ -171,7 +184,7 @@ else()
   )
 
   if(zlib_ADDED)
-	message(STATUS "zlib package added: ${zlib_SOURCE_DIR}")
+    message(STATUS "zlib package added: ${zlib_SOURCE_DIR}")
     target_link_libraries(yosys PUBLIC zlib)
     target_include_directories(yosys PUBLIC ${zlib_SOURCE_DIR})
     target_compile_definitions(yosys PUBLIC YOSYS_ENABLE_ZLIB)
@@ -179,15 +192,15 @@ else()
 endif()
 
 function(include_all_subdirs)
-	# Add subdirectories containing CMakeLists.txt files
-	file(GLOB subdirectories LIST_DIRECTORIES true ${CMAKE_CURRENT_SOURCE_DIR}/*)
-	foreach(subdirectory ${subdirectories})
-		if(IS_DIRECTORY ${subdirectory})
-			if(EXISTS ${subdirectory}/CMakeLists.txt)
-				add_subdirectory(${subdirectory})
-			endif()
-		endif()
-	endforeach()
+    # Add subdirectories containing CMakeLists.txt files
+    file(GLOB subdirectories LIST_DIRECTORIES true ${CMAKE_CURRENT_SOURCE_DIR}/*)
+    foreach(subdirectory ${subdirectories})
+        if(IS_DIRECTORY ${subdirectory})
+            if(EXISTS ${subdirectory}/CMakeLists.txt)
+                add_subdirectory(${subdirectory})
+            endif()
+        endif()
+    endforeach()
 endfunction()
 
 add_subdirectory(backends)
