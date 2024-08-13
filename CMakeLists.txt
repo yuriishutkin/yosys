@@ -213,11 +213,6 @@ add_subdirectory(libs)
 add_subdirectory(passes)
 add_subdirectory(techlibs)
 
-add_executable(yosys_exe)
-set_property(TARGET yosys_exe PROPERTY OUTPUT_NAME yosys)
-target_sources(yosys_exe PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/kernel/driver.cc)
-target_link_libraries(yosys_exe PRIVATE yosys)
-
 target_sources(yosys
   PUBLIC
   FILE_SET HEADERS
@@ -268,4 +263,12 @@ target_sources(yosys
   backends/cxxrtl/runtime/cxxrtl/capi/cxxrtl_capi_vcd.h
 )
 
+if(YOSYS_DLL_ONLY)
+install(TARGETS yosys FILE_SET HEADERS)
+else()
+add_executable(yosys_exe)
+set_property(TARGET yosys_exe PROPERTY OUTPUT_NAME yosys)
+target_sources(yosys_exe PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/kernel/driver.cc)
+target_link_libraries(yosys_exe PRIVATE yosys)
 install(TARGETS yosys yosys_exe FILE_SET HEADERS)
+endif()
