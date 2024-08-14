@@ -103,6 +103,9 @@ int gettimeofday(struct timeval *tv, struct timezone *tz)
 
 void logv(const char *format, va_list ap)
 {
+#ifdef YOSYS_SILENT
+	return;
+#endif
 	while (format[0] == '\n' && format[1] != 0) {
 		log("\n");
 		format++;

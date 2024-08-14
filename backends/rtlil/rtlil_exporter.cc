@@ -62,21 +62,6 @@ const std::vector<RTLIL::SigChunk> &sigspec_chunks(const RTLIL::SigSpec &sigspec
 const RTLIL::SigSpec &cell_port(const RTLIL::Cell *cell, const std::string &port) { return cell->getPort("\\" + port); }
 const RTLIL::SigSpec &cell_out_port(const RTLIL::Cell *cell) { return cell->getPort(ID::Y); }
 
-int cell_params_values(const RTLIL::Cell *cell, std::vector<param_value> &param_values)
-{
-	if (cell->parameters.size() > 0) {
-		for (auto it = cell->parameters.begin(); it != cell->parameters.end(); ++it) {
-			const RTLIL::Const &c = it->second;
-			if (c.flags) {
-				// TODO: support non-int param values
-			}
-			param_values.push_back(param_value(it->first.substr(1), it->second.as_string()));
-		}
-	}
-
-	return 0;
-}
-
 std::string full_module_name(const std::string &mname, const std::vector<param_value> &param_values, bool top) {
 	std::string res = std::string("\\") + mname;
 
@@ -90,7 +75,7 @@ std::string full_module_name(const std::string &mname, const std::vector<param_v
 		for (auto &para : param_values) {
 			SigSpec sig_value;
 			if (!RTLIL::SigSpec::parse(sig_value, NULL, para.value))
-				log_error("Can't decode value '%s'!\n", para.value.c_str());
+				log_warning("Can't decode value '%s'!\n", para.value.c_str());
 			parameters.push_back(std::make_pair(RTLIL::escape_id(para.name), sig_value.as_const()));
 		}
 		res = AST::derived_module_name(res, parameters);
@@ -105,6 +90,24 @@ std::string item_source(const RTLIL::AttrObject *item) {
 		}
 	}
 	return "";
+}
+
+export_status module_parameters(const std::string &mname, std::vector<std::string> &params)
+{
+	if (!yosys_design) {
+		return EXPORT_NOT_FOUND;
+	}
+	
+	for (auto module : yosys_design->modules()) {
+		if (module->name.str().substr(1) == mname) {
+			for (const auto &p : module->avail_parameters) {
+				params.push_back(p.str().substr(1));
+			}
+			return EXPORT_OK;
+		}
+	}
+
+	return EXPORT_NOT_FOUND;
 }
 
 export_status export_module_int(const std::string &full_name, const std::vector<param_value> &param_values = {});
@@ -173,7 +176,7 @@ export_status export_module_int(RTLIL::Module *module, const std::vector<param_v
 
 	for (auto cell : module->cells()) {
 		if (cell->is_mem_cell()) {
-			log_error("Export not implemented: mem_cell\n");
+			log_warning("Export not implemented: mem_cell\n");
 			continue;
 		}
 		
@@ -184,7 +187,7 @@ export_status export_module_int(RTLIL::Module *module, const std::vector<param_v
 		if (cell->type.begins_with("$") && !cell->type.begins_with("$paramod")) {
 			if (cell->type.begins_with("$__") || cell->type.begins_with("$fmcombine") || cell->type.begins_with("$verific$") ||
 			    cell->type.begins_with("$array:") || cell->type.begins_with("$extern:")) {
-				log_error("Export not implemented: %s\n", cell->type.c_str());
+				log_warning("Export not implemented: %s\n", cell->type.c_str());
 				continue;
 			}
 
@@ -226,6 +229,10 @@ export_status export_module_int(RTLIL::Module *module, const std::vector<param_v
 
 export_status export_module_int(const std::string &full_name, const std::vector<param_value> &param_values)
 {
+	if (!yosys_design) {
+		return EXPORT_NOT_FOUND;
+	}
+
 	for (auto module : yosys_design->modules()) {
 		if (module->name.str() == full_name) {
 			return export_module_int(module, param_values);

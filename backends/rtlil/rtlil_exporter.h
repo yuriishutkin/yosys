@@ -88,8 +88,8 @@ namespace RTLIL_EXPORTER {
 	inline std::string sigspec_name(const RTLIL::SigSpec &sigspec) { return idString_str(sigspec_as_wire(sigspec)->name); }
 	YOSYS_DLL_SPEC const RTLIL::SigSpec &cell_port(const RTLIL::Cell *cell, const std::string &port);
 	YOSYS_DLL_SPEC const RTLIL::SigSpec &cell_out_port(const RTLIL::Cell *cell);
-	YOSYS_DLL_SPEC int cell_params_values(const RTLIL::Cell *cell, std::vector<param_value> &param_values);
 	YOSYS_DLL_SPEC std::string item_source(const RTLIL::AttrObject *item);
+	YOSYS_DLL_SPEC export_status module_parameters(const std::string &mname, std::vector<std::string> &params);
 
 	YOSYS_DLL_SPEC export_status export_module(const std::string& name, const std::vector<param_value> &param_values = {});
 	}
