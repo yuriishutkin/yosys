@@ -73,6 +73,7 @@ int string_buf_index = -1;
 static struct timeval initial_tv = { 0, 0 };
 static bool next_print_log = false;
 static int log_newline_count = 0;
+static bool print_error = false;
 
 static void log_id_cache_clear()
 {
@@ -103,8 +104,8 @@ int gettimeofday(struct timeval *tv, struct timezone *tz)
 
 void logv(const char *format, va_list ap)
 {
-#ifdef YOSYS_SILENT
-	return;
+#if YOSYS_SILENT
+	if (!print_error) return;
 #endif
 	while (format[0] == '\n' && format[1] != 0) {
 		log("\n");
@@ -353,6 +354,7 @@ static void logv_error_with_prefix(const char *prefix,
 				f = stderr;
 
 	log_last_error = vstringf(format, ap);
+	print_error = true;
 	log("%s%s", prefix, log_last_error.c_str());
 	log_flush();
 

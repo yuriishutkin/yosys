@@ -825,6 +825,7 @@ struct HierarchyPass : public Pass {
 		bool flag_simcheck = false;
 		bool flag_smtcheck = false;
 		bool purge_lib = false;
+		bool keep_all = false;
 		RTLIL::Module *top_mod = NULL;
 		std::string load_top_mod;
 		std::vector<std::string> libdirs;
@@ -896,6 +897,10 @@ struct HierarchyPass : public Pass {
 			}
 			if (args[argidx] == "-purge_lib") {
 				purge_lib = true;
+				continue;
+			}
+			if (args[argidx] == "-keep_all") {
+				keep_all = true;
 				continue;
 			}
 			if (args[argidx] == "-keep_positionals") {
@@ -1097,8 +1102,8 @@ struct HierarchyPass : public Pass {
 		}
 
 
-		if (top_mod != NULL) {
-			log_header(design, "Analyzing design hierarchy..\n");
+		if (top_mod != NULL && !keep_all) {
+			log_header(design, "Cleaning design hierarchy..\n");
 			hierarchy_clean(design, top_mod, purge_lib);
 		}
 

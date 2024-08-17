@@ -23,6 +23,10 @@ endif()
 target_include_directories(yosys PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(yosys PUBLIC _YOSYS_)
 
+if(YOSYS_SILENT)
+target_compile_definitions(yosys PRIVATE YOSYS_SILENT=1)
+endif()
+
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   target_compile_options(yosys PUBLIC -Wno-deprecated-declarations)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
