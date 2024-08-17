@@ -59,7 +59,7 @@ void yosys_shutdown();
 Tcl_Interp *yosys_get_tcl_interp();
 #endif
 
-extern RTLIL::Design *yosys_design;
+extern YOSYS_DLL_SPEC RTLIL::Design *yosys_design;
 
 RTLIL::Design *yosys_get_design();
 std::string proc_self_dirname();
@@ -75,14 +75,14 @@ void run_backend(std::string filename, std::string command, RTLIL::Design *desig
 void shell(RTLIL::Design *design);
 
 // journal of all input and output files read (for "yosys -E")
-extern std::set<std::string> yosys_input_files, yosys_output_files;
+extern YOSYS_DLL_SPEC std::set<std::string> yosys_input_files, yosys_output_files;
 
 // from kernel/version_*.o (cc source generated from Makefile)
-extern const char *yosys_version_str;
+extern YOSYS_DLL_SPEC const char *yosys_version_str;
 
 // from passes/cmds/design.cc
-extern std::map<std::string, RTLIL::Design*> saved_designs;
-extern std::vector<RTLIL::Design*> pushed_designs;
+extern YOSYS_DLL_SPEC std::map<std::string, RTLIL::Design*> saved_designs;
+extern YOSYS_DLL_SPEC std::vector<RTLIL::Design*> pushed_designs;
 
 // from passes/cmds/pluginc.cc
 extern std::map<std::string, void*> loaded_plugins;

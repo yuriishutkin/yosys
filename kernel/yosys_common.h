@@ -146,6 +146,16 @@ extern Tcl_Obj *Tcl_ObjSetVar2(Tcl_Interp *interp, Tcl_Obj *part1Ptr, Tcl_Obj *p
 #  error "C++17 or later compatible compiler is required"
 #endif
 
+#ifdef _MSC_VER
+#ifdef YOSYS_DLL_EXPORT
+#define YOSYS_DLL_SPEC __declspec(dllexport)
+#else
+#define YOSYS_DLL_SPEC __declspec(dllimport)
+#endif
+#else
+#define YOSYS_DLL_SPEC
+#endif
+
 
 YOSYS_NAMESPACE_BEGIN
 
