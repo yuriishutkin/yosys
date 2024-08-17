@@ -76,7 +76,7 @@ static void logmap_all()
 	logmap(ID($_DFFSR_PPP_));
 }
 
-static bool parse_pin(LibertyAst *cell, LibertyAst *attr, std::string &pin_name, bool &pin_pol)
+static bool parse_pin(const LibertyAst *cell, const LibertyAst *attr, std::string &pin_name, bool &pin_pol)
 {
 	if (cell == nullptr || attr == nullptr || attr->value.empty())
 		return false;
@@ -115,9 +115,9 @@ static bool parse_pin(LibertyAst *cell, LibertyAst *attr, std::string &pin_name,
 	return false;
 }
 
-static void find_cell(LibertyAst *ast, IdString cell_type, bool clkpol, bool has_reset, bool rstpol, bool rstval)
+static void find_cell(const LibertyAst *ast, IdString cell_type, bool clkpol, bool has_reset, bool rstpol, bool rstval, std::vector<std::string> &dont_use_cells)
 {
-	LibertyAst *best_cell = nullptr;
+	const LibertyAst *best_cell = nullptr;
 	std::map<std::string, char> best_cell_ports;
 	int best_cell_pins = 0;
 	bool best_cell_noninv = false;
@@ -131,11 +131,23 @@ static void find_cell(LibertyAst *ast, IdString cell_type, bool clkpol, bool has
 		if (cell->id != "cell" || cell->args.size() != 1)
 			continue;
 
-		LibertyAst *dn = cell->find("dont_use");
+		const LibertyAst *dn = cell->find("dont_use");
 		if (dn != nullptr && dn->value == "true")
 			continue;
 
-		LibertyAst *ff = cell->find("ff");
+		bool dont_use = false;
+		for (std::string &dont_use_cell : dont_use_cells)
+		{
+			if (patmatch(dont_use_cell.c_str(), cell->args[0].c_str()))
+			{
+				dont_use = true;
+				break;
+			}
+		}
+		if (dont_use)
+			continue;
+
+		const LibertyAst *ff = cell->find("ff");
 		if (ff == nullptr)
 			continue;
 
@@ -162,7 +174,7 @@ static void find_cell(LibertyAst *ast, IdString cell_type, bool clkpol, bool has
 		this_cell_ports[cell_next_pin] = 'D';
 
 		double area = 0;
-		LibertyAst *ar = cell->find("area");
+		const LibertyAst *ar = cell->find("area");
 		if (ar != nullptr && !ar->value.empty())
 			area = atof(ar->value.c_str());
 
@@ -174,7 +186,7 @@ static void find_cell(LibertyAst *ast, IdString cell_type, bool clkpol, bool has
 			if (pin->id != "pin" || pin->args.size() != 1)
 				continue;
 
-			LibertyAst *dir = pin->find("direction");
+			const LibertyAst *dir = pin->find("direction");
 			if (dir == nullptr || dir->value == "internal")
 				continue;
 			num_pins++;
@@ -182,7 +194,7 @@ static void find_cell(LibertyAst *ast, IdString cell_type, bool clkpol, bool has
 			if (dir->value == "input" && this_cell_ports.count(pin->args[0]) == 0)
 				goto continue_cell_loop;
 
-			LibertyAst *func = pin->find("function");
+			const LibertyAst *func = pin->find("function");
 			if (dir->value == "output" && func != nullptr) {
 				std::string value = func->value;
 				for (size_t pos = value.find_first_of("\" \t"); pos != std::string::npos; pos = value.find_first_of("\" \t"))
@@ -227,9 +239,9 @@ static void find_cell(LibertyAst *ast, IdString cell_type, bool clkpol, bool has
 	}
 }
 
-static void find_cell_sr(LibertyAst *ast, IdString cell_type, bool clkpol, bool setpol, bool clrpol)
+static void find_cell_sr(const LibertyAst *ast, IdString cell_type, bool clkpol, bool setpol, bool clrpol, std::vector<std::string> &dont_use_cells)
 {
-	LibertyAst *best_cell = nullptr;
+	const LibertyAst *best_cell = nullptr;
 	std::map<std::string, char> best_cell_ports;
 	int best_cell_pins = 0;
 	bool best_cell_noninv = false;
@@ -243,11 +255,23 @@ static void find_cell_sr(LibertyAst *ast, IdString cell_type, bool clkpol, bool 
 		if (cell->id != "cell" || cell->args.size() != 1)
 			continue;
 
-		LibertyAst *dn = cell->find("dont_use");
+		const LibertyAst *dn = cell->find("dont_use");
 		if (dn != nullptr && dn->value == "true")
 			continue;
 
-		LibertyAst *ff = cell->find("ff");
+		bool dont_use = false;
+		for (std::string &dont_use_cell : dont_use_cells)
+		{
+			if (patmatch(dont_use_cell.c_str(), cell->args[0].c_str()))
+			{
+				dont_use = true;
+				break;
+			}
+		}
+		if (dont_use)
+			continue;
+
+		const LibertyAst *ff = cell->find("ff");
 		if (ff == nullptr)
 			continue;
 
@@ -270,7 +294,7 @@ static void find_cell_sr(LibertyAst *ast, IdString cell_type, bool clkpol, bool 
 		this_cell_ports[cell_next_pin] = 'D';
 
 		double area = 0;
-		LibertyAst *ar = cell->find("area");
+		const LibertyAst *ar = cell->find("area");
 		if (ar != nullptr && !ar->value.empty())
 			area = atof(ar->value.c_str());
 
@@ -282,7 +306,7 @@ static void find_cell_sr(LibertyAst *ast, IdString cell_type, bool clkpol, bool 
 			if (pin->id != "pin" || pin->args.size() != 1)
 				continue;
 
-			LibertyAst *dir = pin->find("direction");
+			const LibertyAst *dir = pin->find("direction");
 			if (dir == nullptr || dir->value == "internal")
 				continue;
 			num_pins++;
@@ -290,7 +314,7 @@ static void find_cell_sr(LibertyAst *ast, IdString cell_type, bool clkpol, bool 
 			if (dir->value == "input" && this_cell_ports.count(pin->args[0]) == 0)
 				goto continue_cell_loop;
 
-			LibertyAst *func = pin->find("function");
+			const LibertyAst *func = pin->find("function");
 			if (dir->value == "output" && func != nullptr) {
 				std::string value = func->value;
 				for (size_t pos = value.find_first_of("\" \t"); pos != std::string::npos; pos = value.find_first_of("\" \t"))
@@ -414,7 +438,7 @@ struct DfflibmapPass : public Pass {
 	void help() override
 	{
 		log("\n");
-		log("    dfflibmap [-prepare] [-map-only] [-info] -liberty <file> [selection]\n");
+		log("    dfflibmap [-prepare] [-map-only] [-info] [-dont_use <cell_name>] -liberty <file> [selection]\n");
 		log("\n");
 		log("Map internal flip-flop cells to the flip-flop cells in the technology\n");
 		log("library specified in the given liberty file.\n");
@@ -435,6 +459,11 @@ struct DfflibmapPass : public Pass {
 		log("that would be passed to the dfflegalize pass.  The design will not be\n");
 		log("changed.\n");
 		log("\n");
+		log("When called with -dont_use, this command will not map to the specified cell\n");
+		log("name as an alternative to setting the dont_use property in the Liberty file.\n");
+		log("This argument can be called multiple times with different cell names. This\n");
+		log("argument also supports simple glob patterns in the cell name.\n");
+		log("\n");
 	}
 	void execute(std::vector<std::string> args, RTLIL::Design *design) override
 	{
@@ -445,6 +474,8 @@ struct DfflibmapPass : public Pass {
 		bool prepare_mode = false;
 		bool map_only_mode = false;
 		bool info_mode = false;
+
+		std::vector<std::string> dont_use_cells;
 
 		size_t argidx;
 		for (argidx = 1; argidx < args.size(); argidx++)
@@ -465,6 +496,10 @@ struct DfflibmapPass : public Pass {
 			}
 			if (arg == "-info") {
 				info_mode = true;
+				continue;
+			}
+			if (arg == "-dont_use" && argidx+1 < args.size()) {
+				dont_use_cells.push_back(args[++argidx]);
 				continue;
 			}
 			break;
@@ -491,26 +526,26 @@ struct DfflibmapPass : public Pass {
 		LibertyParser libparser(f);
 		f.close();
 
-		find_cell(libparser.ast, ID($_DFF_N_), false, false, false, false);
-		find_cell(libparser.ast, ID($_DFF_P_), true, false, false, false);
+		find_cell(libparser.ast, ID($_DFF_N_), false, false, false, false, dont_use_cells);
+		find_cell(libparser.ast, ID($_DFF_P_), true, false, false, false, dont_use_cells);
 
-		find_cell(libparser.ast, ID($_DFF_NN0_), false, true, false, false);
-		find_cell(libparser.ast, ID($_DFF_NN1_), false, true, false, true);
-		find_cell(libparser.ast, ID($_DFF_NP0_), false, true, true, false);
-		find_cell(libparser.ast, ID($_DFF_NP1_), false, true, true, true);
-		find_cell(libparser.ast, ID($_DFF_PN0_), true, true, false, false);
-		find_cell(libparser.ast, ID($_DFF_PN1_), true, true, false, true);
-		find_cell(libparser.ast, ID($_DFF_PP0_), true, true, true, false);
-		find_cell(libparser.ast, ID($_DFF_PP1_), true, true, true, true);
+		find_cell(libparser.ast, ID($_DFF_NN0_), false, true, false, false, dont_use_cells);
+		find_cell(libparser.ast, ID($_DFF_NN1_), false, true, false, true, dont_use_cells);
+		find_cell(libparser.ast, ID($_DFF_NP0_), false, true, true, false, dont_use_cells);
+		find_cell(libparser.ast, ID($_DFF_NP1_), false, true, true, true, dont_use_cells);
+		find_cell(libparser.ast, ID($_DFF_PN0_), true, true, false, false, dont_use_cells);
+		find_cell(libparser.ast, ID($_DFF_PN1_), true, true, false, true, dont_use_cells);
+		find_cell(libparser.ast, ID($_DFF_PP0_), true, true, true, false, dont_use_cells);
+		find_cell(libparser.ast, ID($_DFF_PP1_), true, true, true, true, dont_use_cells);
 
-		find_cell_sr(libparser.ast, ID($_DFFSR_NNN_), false, false, false);
-		find_cell_sr(libparser.ast, ID($_DFFSR_NNP_), false, false, true);
-		find_cell_sr(libparser.ast, ID($_DFFSR_NPN_), false, true, false);
-		find_cell_sr(libparser.ast, ID($_DFFSR_NPP_), false, true, true);
-		find_cell_sr(libparser.ast, ID($_DFFSR_PNN_), true, false, false);
-		find_cell_sr(libparser.ast, ID($_DFFSR_PNP_), true, false, true);
-		find_cell_sr(libparser.ast, ID($_DFFSR_PPN_), true, true, false);
-		find_cell_sr(libparser.ast, ID($_DFFSR_PPP_), true, true, true);
+		find_cell_sr(libparser.ast, ID($_DFFSR_NNN_), false, false, false, dont_use_cells);
+		find_cell_sr(libparser.ast, ID($_DFFSR_NNP_), false, false, true, dont_use_cells);
+		find_cell_sr(libparser.ast, ID($_DFFSR_NPN_), false, true, false, dont_use_cells);
+		find_cell_sr(libparser.ast, ID($_DFFSR_NPP_), false, true, true, dont_use_cells);
+		find_cell_sr(libparser.ast, ID($_DFFSR_PNN_), true, false, false, dont_use_cells);
+		find_cell_sr(libparser.ast, ID($_DFFSR_PNP_), true, false, true, dont_use_cells);
+		find_cell_sr(libparser.ast, ID($_DFFSR_PPN_), true, true, false, dont_use_cells);
+		find_cell_sr(libparser.ast, ID($_DFFSR_PPP_), true, true, true, dont_use_cells);
 
 		log("  final dff cell mappings:\n");
 		logmap_all();
