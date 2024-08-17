@@ -149,7 +149,7 @@ export_status export_module_int(RTLIL::Module *module, const std::vector<param_v
 				if (it != module->parameter_default_values.end()) {
 					if (int intval = it->second.as_int()) {
 						char buf[128];
-						itoa(intval, buf, 10);
+						sprintf(buf, "%d", intval);
 						value = buf;
 					} else {
 						value = it->second.as_string();
